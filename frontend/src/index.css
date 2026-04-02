@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gray-50 text-gray-900 antialiased m-0;
+}
+
+#root {
+  @apply min-h-screen;
+}
+
+/* BUG #16 fix: skryjeme tiskový wrapper mimo tisk přes CSS (ne inline style, který !important nepřebije) */
+.print-area {
+  display: none;
+}
+
+/* ── Tiskové styly ─────────────────────────────────────────── */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 12mm 10mm;
+  }
+
+  /* skryjeme vše kromě tiskového obsahu */
+  body { background: white !important; }
+  .no-print { display: none !important; }
+
+  /* tiskový wrapper */
+  .print-area {
+    display: block !important;
+  }
+
+  /* týdenní tabulka – celá šíře stránky */
+  .print-area table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+  }
+  .print-area th,
+  .print-area td {
+    border: 1px solid #d1d5db;
+    padding: 4px 5px;
+    vertical-align: top;
+  }
+  .print-area th {
+    background: #f3f4f6 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* barevné bloky návštěv */
+  .visit-block {
+    border: 1px solid currentColor;
+    border-radius: 3px;
+    padding: 2px 4px;
+    margin-bottom: 2px;
+    font-size: 8pt;
+    break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* legenda */
+  .print-legend {
+    margin-top: 6mm;
+    font-size: 8pt;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}

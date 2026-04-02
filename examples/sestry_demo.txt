@@ -1,0 +1,17 @@
+# Nurse Planner — Sestry
+# Verze formátu: 1.0
+# Tyden: 2026-W16
+
+Jana Nováková | Po | 07:00 | 15:30 | 12:00-12:30
+Jana Nováková | Ut | 07:00 | 15:30 | 12:00-12:30
+Jana Nováková | St | 07:00 | 15:30 | 12:00-12:30
+Jana Nováková | Ct | 07:00 | 15:30 | 12:00-12:30
+Jana Nováková | Pa | 07:00 | 13:00 |
+
+Marie Svobodová | ALL | 08:00 | 16:30 | 10:00-10:15,13:00-13:30
+
+Petra Horáková | Po | 06:00 | 14:30 | 09:30-09:45,12:00-12:30
+Petra Horáková | Ut | 06:00 | 14:30 | 09:30-09:45,12:00-12:30
+Petra Horáková | St | VOLNO
+Petra Horáková | Ct | 06:00 | 14:30 | 09:30-09:45,12:00-12:30
+Petra Horáková | Pa | 06:00 | 12:00 |

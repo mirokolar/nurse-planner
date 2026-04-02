@@ -1,0 +1,14 @@
+# Nurse Planner — Pacienti
+# Verze formátu: 1.0
+# Tyden: 2026-W15
+
+P001 | Karel Dvořák      | Zborovecká 1533/65, Blansko, 678 01                  | Po,St,Pa | 08:00 | 10:00 | 45 | Jana Nováková
+P002 | Eva Marková       | Sladkovského 1292/2, Blansko, 678 01                 | ALL      | ANY   | ANY   | 30 | ANY
+P003 | Jiří Blažek       | Obůrka 71, Blansko, 678 01                           | Ut,Ct    | 13:00 | 16:00 | 60 | Marie Svobodová
+P004 | Alžběta Červená   | Veselice 2, Vavřinec, 679 13                         | Po,Pa    | 07:00 | 09:00 | 30 | ANY
+P005 | Tomáš Mašek       | Sloup 287, Sloup, 679 13                             | St       | 10:00 | 14:00 | 45 | Petra Horáková
+P006 | Věra Procházková  | Kuničky 120, Kuničky, 679 02                         | Po,Ut,St | 09:00 | 11:30 | 30 | Marie Svobodová
+P007 | Bohumil Krejčí    | Zahradní 129, Černá Hora, 679 21                     | Ut,Ct,Pa | ANY   | ANY   | 40 | ANY
+P008 | Ludmila Horáčková | Olešná 63, Blansko, 678 01                           | Po,St    | 07:30 | 10:00 | 35 | Jana Nováková
+P009 | Miroslav Novák    | Babice nad Svitavou 148, Babice nad Svitavou, 664 01 | Ct       | 14:00 | 14:10 | 50 | ANY
+P010 | Dana Pokorná      | Husova 35, Blansko, 678 01                           | Pa       | ANY   | ANY   | 25 | Petra Horáková
