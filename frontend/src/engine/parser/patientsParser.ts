@@ -27,7 +27,7 @@ export function parsePatients(text: string): ParseResult<Patient> {
     const id      = allParts[0];
     const name    = allParts[1];
     const address = allParts.slice(2, allParts.length - 5).join(' | ').trim() || allParts[2];
-    const [daysRaw, casOd, casDo, trvaniRaw, prefSestra] = allParts.slice(allParts.length - 5);
+    const [daysRaw, casOd, casDo, trvaniRaw] = allParts.slice(allParts.length - 5);
 
     if (!id || !name || !address) {
       errors.push(`Řádek ${idx + 1}: chybí ID, jméno nebo adresa`);
@@ -42,7 +42,6 @@ export function parsePatients(text: string): ParseResult<Patient> {
 
     const windowStart = casOd.toUpperCase() === 'ANY' ? 'ANY' : casOd;
     const windowEnd   = casDo.toUpperCase() === 'ANY' ? 'ANY' : casDo;
-    const preferredNurse = prefSestra.toUpperCase() === 'ANY' ? 'ANY' : prefSestra;
 
     if (windowStart !== 'ANY' && !/^\d{2}:\d{2}$/.test(windowStart)) {
       errors.push(`Řádek ${idx + 1}: neplatný formát CAS_OD "${casOd}"`);
@@ -75,7 +74,7 @@ export function parsePatients(text: string): ParseResult<Patient> {
     const patient = patientMap.get(id)!;
 
     days.forEach((day) => {
-      const req: VisitRequirement = { patientId: id, day, windowStart, windowEnd, durationMin, preferredNurse };
+      const req: VisitRequirement = { patientId: id, day, windowStart, windowEnd, durationMin };
       patient.visits.push(req);
     });
   });

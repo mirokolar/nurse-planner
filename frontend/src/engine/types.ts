@@ -24,6 +24,7 @@ export interface DayAvailability {
 export interface Nurse {
   name: string;
   availability: DayAvailability[];
+  homeCoordinates?: LatLng;  // adresa pečovatelky pro výpočet startu trasy
 }
 
 export interface LatLng {
@@ -34,10 +35,11 @@ export interface LatLng {
 export interface VisitRequirement {
   patientId: string;
   day: Weekday;
-  windowStart: string | 'ANY';
-  windowEnd: string | 'ANY';
+  windowStart: string | 'ANY';   // ideální čas příjezdu – od
+  windowEnd: string | 'ANY';     // ideální čas příjezdu – do
+  backupWindowStart?: string;    // náhradní čas – od (pokud existuje)
+  backupWindowEnd?: string;      // náhradní čas – do (pokud existuje)
   durationMin: number;
-  preferredNurse: string | 'ANY';
 }
 
 export interface Patient {
@@ -55,7 +57,14 @@ export interface ScheduledVisit {
   arrivalTime: string;
   departureTime: string;
   travelFromPrevMin: number;
+  usedBackupTime: boolean;   // true = naplánováno v náhradním čase, ne ideálním
   warnings: string[];
+  // 30min přestávka na odpočinek vložená re-timingem (zobrazení v itineráři).
+  restBefore?: TimeInterval;  // přestávka těsně PŘED touto návštěvou
+  restAfter?: TimeInterval;   // přestávka PO této (poslední) návštěvě
+  // Interní meze příjezdu pro re-timing (spodní/horní mez); UI je ignoruje.
+  _windowStartMin?: number;
+  _latestArrivalMin?: number;
 }
 
 export interface DaySchedule {

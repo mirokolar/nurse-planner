@@ -104,16 +104,16 @@ export function WeeklyGrid({ schedule }: WeeklyGridProps) {
 }
 
 function VisitBlock({ visit, colorClass }: { visit: ScheduledVisit; colorClass: string }) {
+  const hasWarning = visit.warnings.length > 0;
+  const isBackup   = visit.usedBackupTime;
   return (
-    <div className={`border rounded px-2 py-1 text-xs ${colorClass} ${visit.warnings.length > 0 ? 'ring-1 ring-yellow-400' : ''}`}>
+    <div className={`border rounded px-2 py-1 text-xs ${colorClass} ${isBackup ? 'ring-2 ring-amber-400' : hasWarning ? 'ring-1 ring-yellow-400' : ''}`}>
       <div className="font-semibold truncate max-w-[120px]">{visit.patient.name}</div>
       <div className="opacity-75">{visit.arrivalTime}–{visit.departureTime}</div>
       {visit.travelFromPrevMin > 0 && (
         <div className="opacity-60 text-[10px]">jízda {visit.travelFromPrevMin} min</div>
       )}
-      {visit.warnings.length > 0 && (
-        <div className="text-yellow-700 text-[10px]">⚠ náhrada</div>
-      )}
+      {isBackup && <div className="text-amber-700 text-[10px] font-medium">⚠ náhradní čas</div>}
     </div>
   );
 }

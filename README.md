@@ -4,175 +4,136 @@
 
 1. [Co aplikace dělá](#1-co-aplikace-dělá)
 2. [Jak začít](#2-jak-začít)
-3. [Soubor sester — `sestry.txt`](#3-soubor-sester--sestrytxt)
-4. [Soubor pacientů — `pacienti.txt`](#4-soubor-pacientů--pacientitxt)
-5. [Plánování od zvoleného dne](#5-plánování-od-zvoleného-dne)
-6. [Výsledný plán](#6-výsledný-plán)
-7. [Neplánované návštěvy a varování](#7-neplánované-návštěvy-a-varování)
-8. [Tisk a export do PDF](#8-tisk-a-export-do-pdf)
-9. [Časté chyby a jejich řešení](#9-časté-chyby-a-jejich-řešení)
+3. [Vstupní soubor `vstup.xlsx`](#3-vstupní-soubor-vstupxlsx)
+   - [List `klienti`](#list-klienti)
+   - [List `docházka`](#list-docházka)
+   - [List `pečovatelky`](#list-pečovatelky)
+4. [Jak se sestavuje plán](#4-jak-se-sestavuje-plán)
+5. [Přestávky a pauzy](#5-přestávky-a-pauzy)
+6. [Plánování od zvoleného dne](#6-plánování-od-zvoleného-dne)
+7. [Výsledný plán](#7-výsledný-plán)
+8. [Neplánované návštěvy a varování](#8-neplánované-návštěvy-a-varování)
+9. [Tisk a export do PDF](#9-tisk-a-export-do-pdf)
+10. [Časté chyby a jejich řešení](#10-časté-chyby-a-jejich-řešení)
 
 ---
 
 ## 1. Co aplikace dělá
 
-Nurse Planner sestavuje týdenní harmonogram návštěv zdravotních sester u pacientů v domácím léčení. Na základě dvou textových souborů (dostupnost sester + požadavky pacientů) vygeneruje plán, který:
+Nurse Planner sestavuje týdenní harmonogram návštěv zdravotních sester (pečovatelek) u klientů v domácím léčení. Na základě **jednoho vstupního Excel souboru** vygeneruje plán, který:
 
-- respektuje pracovní dobu a přestávky každé sestry,
-- respektuje časové okno, ve kterém sestra může k pacientovi dorazit,
-- zohledňuje dobu jízdy autem mezi jednotlivými adresami,
-- rovnoměrně rozkládá zátěž mezi sestry,
+- respektuje pracovní dobu a překážky (dovolená, lékař…) každé sestry,
+- respektuje časové okno, ve kterém má sestra ke klientovi dorazit,
+- zohledňuje dobu jízdy autem mezi adresami (každá sestra vyráží ze svého bydliště),
+- nejdříve obsadí nejdelší úkony a rozdělí je rovnoměrně mezi sestry,
+- každé sestře naplánuje 30minutovou přestávku na odpočinek,
 - hlásí všechny návštěvy, které se nepodařilo naplánovat, i s důvodem.
+
+Aplikace vytvoří **dva plány**: **reálný** (respektuje časová okna) a **ideální** (bez oken — ukazuje teoretické optimum tras).
 
 ---
 
 ## 2. Jak začít
 
 1. Otevřete aplikaci v prohlížeči.
-2. Nahrujte **soubor sester** (drag & drop nebo kliknutím na levý panel).
-3. Nahrujte **soubor pacientů** (pravý panel).
-4. Zkontrolujte, že oba soubory byly načteny bez chyb (zelené potvrzení).
-5. Volitelně upravte **číslo týdne** a **den, od kterého plánovat**.
-6. Klikněte na **Sestavit plán**.
+2. Nahrajte **vstupní Excel soubor** `vstup.xlsx` (drag & drop nebo kliknutím).
+3. Zkontrolujte, že soubor byl načten bez chyb (počet načtených klientů a sester, případná varování).
+4. Volitelně upravte **číslo týdne** a **den, od kterého plánovat**.
+5. Klikněte na **Sestavit plán**.
 
 Geocodování adres a výpočet cestovní matice může trvat desítky sekund — průběh je zobrazován v progress baru.
 
+> Prázdnou šablonu najdete v `input/vstup_template.xlsx`.
+
 ---
 
-## 3. Soubor sester — `sestry.txt`
+## 3. Vstupní soubor `vstup.xlsx`
 
-### Formát řádku
+Soubor musí obsahovat **tři listy**: `klienti`, `docházka` a `pečovatelky`. Pracovní doba sester je pevně **07:00–15:30**.
 
-```
-JMENO | DEN | ZACATEK | KONEC | PRESTAVKY
-```
+### List `klienti`
 
-| Sloupec | Popis |
+První dva řádky jsou hlavičky, data začínají od třetího řádku. Pro každého klienta:
+
+| Sloupec | Význam |
 |---|---|
-| `JMENO` | Celé jméno sestry (musí být konzistentní s preferencemi v souboru pacientů) |
-| `DEN` | Den v týdnu: `Po`, `Ut`, `St`, `Ct`, `Pa` — nebo `ALL` pro všechny pracovní dny najednou |
-| `ZACATEK` | Začátek směny ve formátu `HH:MM` (24h) — nebo `VOLNO` |
-| `KONEC` | Konec směny ve formátu `HH:MM` |
-| `PRESTAVKY` | Přestávky ve formátu `HH:MM-HH:MM`, více přestávek odděleno čárkou; může být prázdné |
+| **plán** | Zatržítko — zatrhněte klienty, kteří se mají plánovat. Nezatržení se přeskočí. |
+| **jméno** | Celé jméno klienta. *Stejné jméno na více řádcích = jeden klient* (např. návštěva 2× denně). |
+| **adresa** | Ulice, číslo, město, PSČ — pro geocodování (čím přesnější, tím lépe). |
 
-Řádky začínající `#` jsou komentáře a ignorují se. Prázdné řádky jsou také ignorovány.
+Dále pro **každý pracovní den** (Po–Pá) skupina sloupců:
 
-### Klíčová slova
-
-| Klíčové slovo | Kde se použije | Význam |
-|---|---|---|
-| `ALL` | Sloupec DEN | Nastaví stejný rozvrh pro všechny pracovní dny (Po–Pa) |
-| `VOLNO` | Sloupec ZACATEK | Sestra v daný den nepracuje |
-
-> **Priorita:** Pokud sestra má řádek `ALL` i řádek pro konkrétní den, **konkrétní den vždy přepíše ALL** — nezávisle na pořadí řádků v souboru.
-
-### Příklady
-
-**Různé směny každý den:**
-```
-Jana Nováková | Po | 07:00 | 15:30 | 12:00-12:30
-Jana Nováková | Ut | 07:00 | 15:30 | 12:00-12:30
-Jana Nováková | St | 07:00 | 15:30 | 12:00-12:30
-Jana Nováková | Ct | 07:00 | 15:30 | 12:00-12:30
-Jana Nováková | Pa | 07:00 | 13:00 |
-```
-
-**Stejná směna celý týden (`ALL`), s více přestávkami:**
-```
-Marie Svobodová | ALL | 08:00 | 16:30 | 10:00-10:15,13:00-13:30
-```
-
-**`ALL` jako základ, jeden den přepsán (`VOLNO`) nebo zkrácen:**
-```
-Petra Horáková | ALL  | 06:00 | 14:30 | 09:30-09:45,12:00-12:30
-Petra Horáková | St   | VOLNO
-Petra Horáková | Pa   | 06:00 | 12:00 |
-```
-> Ve středu Petra nepracuje. V pátek má zkrácenou směnu bez přestávky. Ostatní dny platí `ALL`.
-
-### Pravidla
-
-- Sestra musí ve směně stihnout cestu k pacientovi i samotnou návštěvu. Pokud čas nestačí, návštěva se neplánuje a objeví se v reportu.
-- Přestávky jsou blokovány — sestra v jejich průběhu není dispozici. Pokud by návštěva zasahovala do přestávky, algoritmus ji posune na čas po přestávce (pokud to stihne do konce okna pacienta).
-
----
-
-## 4. Soubor pacientů — `pacienti.txt`
-
-### Formát řádku
-
-```
-ID | JMENO | ADRESA | DNY | CAS_OD | CAS_DO | TRVANI_MIN | PREFERENCE_SESTRA
-```
-
-| Sloupec | Popis |
+| Sloupec dne | Význam |
 |---|---|
-| `ID` | Unikátní identifikátor pacienta (alfanumerický, bez mezer, např. `P001`) |
-| `JMENO` | Celé jméno pacienta |
-| `ADRESA` | Adresa pro geocodování — ulice, číslo, město, PSC (co přesnější, tím lepší) |
-| `DNY` | Dny, ve kterých se návštěva opakuje: `Po,Ut,St` nebo `ALL` pro každý pracovní den |
-| `CAS_OD` | Nejdřívější čas **příjezdu** sestry (`HH:MM`) — nebo `ANY` |
-| `CAS_DO` | Nejpozdější čas **příjezdu** sestry (`HH:MM`) — nebo `ANY` |
-| `TRVANI_MIN` | Délka návštěvy v minutách (kladné celé číslo) |
-| `PREFERENCE_SESTRA` | Preferované jméno sestry — nebo `ANY` |
+| **(den)** | Zatržítko — má se v tento den klient navštívit? |
+| **čas** | Ideální okno příjezdu sestry. |
+| **náhradní čas** | Záložní okno, použije se, když ideální nelze splnit. |
+| **délka** | Délka úkonu v minutách. |
 
-> **Důležité:** `CAS_OD` a `CAS_DO` omezují **čas příjezdu**, ne celou dobu návštěvy. Pokud sestra dorazí v `CAS_DO`, může u pacienta zůstat ještě `TRVANI_MIN` minut — i po `CAS_DO`.
+**Formáty časové buňky:**
+- `7:30` nebo `07:30` → „přijďte od tohoto času" (horní mez není omezena).
+- `7:30-9:00` (povolena i tečka `8.00` a mezery `14:00 - 14:30`) → okno příjezdu od–do.
+- prázdné → kdykoli ve směně.
 
-### Klíčová slova
+> **Důležité:** Čas (ideální i náhradní) omezuje **čas příjezdu**, ne celou dobu návštěvy. Pokud sestra dorazí na horní mezi okna, může u klienta zůstat ještě celou délku úkonu — i po této mezi.
 
-| Klíčové slovo | Kde se použije | Význam |
-|---|---|---|
-| `ALL` | Sloupec DNY | Návštěva každý pracovní den (Po–Pa) |
-| `ANY` | CAS_OD nebo CAS_DO | Bez omezení — sestra může přijet kdykoli v rámci své směny |
-| `ANY` | PREFERENCE_SESTRA | Může přijet libovolná dostupná sestra |
+### List `docházka`
 
-### Příklady
+Eviduje přítomnost sester a **překážky v práci**.
 
-**Pacient s pevným oknem a preferovanou sestrou (3× týdně):**
-```
-P001 | Karel Dvořák | Zborovecká 1533/65, Blansko, 678 01 | Po,St,Pa | 08:00 | 10:00 | 45 | Jana Nováková
-```
-Jana musí k Karlovi dorazit mezi 8:00 a 10:00. Návštěva trvá 45 minut, takže může skončit nejpozději v 10:45.
+| Sloupec | Význam |
+|---|---|
+| **jméno** | Jméno sestry. |
+| **(den)** | Zatržítko přítomnosti pro každý den Po–Pá. |
+| **začátek/konec přestávky** | Časový úsek, kdy sestra v daný den **nemůže pracovat** (dovolená, návštěva lékaře apod.). |
 
-**Pacient bez časového omezení, každý den:**
-```
-P002 | Eva Marková | Sladkovského 1292/2, Blansko, 678 01 | ALL | ANY | ANY | 30 | ANY
-```
-Může přijít libovolná sestra kdykoli ve své směně.
+> **Přestávka v listu docházka = překážka**, ne polední pauza. Blokuje daný čas — sestra v něm nedostane žádnou návštěvu. **Povinnou 30minutovou přestávku na odpočinek aplikace přidává automaticky navíc** (viz [kapitola 5](#5-přestávky-a-pauzy)). Pokud sestra žádnou překážku nemá, nechte buňky prázdné.
 
-**Pacient s preferencí sestry a odpoledním oknem:**
-```
-P003 | Jiří Blažek | Obůrka 71, Blansko, 678 01 | Ut,Ct | 13:00 | 16:00 | 60 | Marie Svobodová
-```
-Marie by měla dorazit v úterý a čtvrtek mezi 13:00 a 16:00, návštěva trvá hodinu.
+### List `pečovatelky`
 
-**Pacient s ranním oknem, bez preference sestry:**
-```
-P004 | Alžběta Červená | Veselice 2, Vavřinec, 679 13 | Po,Pa | 07:00 | 09:00 | 30 | ANY
-```
+| Sloupec | Význam |
+|---|---|
+| **jméno** | Jméno sestry (musí odpovídat jménu v listu docházka). |
+| **adresa** | Adresa bydliště sestry. |
 
-### Adresa pro geocodování
+Adresa bydliště se geocoduje a slouží jako **výchozí bod první cesty dne** — sestra vyjíždí k prvnímu klientovi ze svého domova.
 
-Adresa se automaticky převede na GPS souřadnice (geocodování přes OpenStreetMap/Nominatim). Čím přesnější adresa, tím lepší výsledek:
-
-- **Dobře:** `Zborovecká 1533/65, Blansko, 678 01`
-- **Méně přesně:** `Blansko` (najde centrum města, ne konkrétní ulici)
-
-Pokud se adresu nepodaří geocodovat, návštěva se naplánuje bez zohlednění cestovního času a v reportu se zobrazí varování.
-
-Adresa může obsahovat svislítko (`|`) — formát souboru to zvládá správně.
-
-### Pravidlo pro ID pacienta
-
-Stejné `ID` na více řádcích znamená jednoho pacienta navštěvovaného ve více dnech. Všechny řádky se sloučí do jednoho záznamu pacienta s více požadavky na návštěvy.
+> **Poznámka:** Preference konkrétní sestry u klienta se **nezadává** — aplikace přiřazuje sestry automaticky podle vytížení a vzdálenosti.
 
 ---
 
-## 5. Plánování od zvoleného dne
+## 4. Jak se sestavuje plán
 
-Pokud sestra onemocní nebo nastane jiná situace, která znemožní dodržení původního plánu od pondělí, lze plán sestavit pouze pro zbytek týdne.
+Plánuje se po jednotlivých dnech. V rámci každého dne aplikace obsazuje klienty v tomto pořadí:
 
-Na hlavní obrazovce klikněte v sekci **Plánovat od:** na požadovaný den:
+1. **Nejdelší úkony první.** Vezme se horních **20 % návštěv dne** podle délky úkonu a rozdělí se **rovnoměrně mezi sestry** (podle součtu minut, aby měly vyváženou zátěž).
+2. **Klienti objednaní na pevný čas** — přiřadí se podle **adresy** (nejbližší dostupná sestra), bez ohledu na vyvažování.
+3. **Ostatní klienti** (kratší úkony nebo bez pevného času) — opět podle vzdálenosti.
+
+Pokud se klient nevejde do ideálního okna, aplikace zkusí jeho **náhradní čas** a teprve potom plánování bez časového omezení. Když ani to nejde, klient se objeví v reportu neplánovaných.
+
+**Optimalizace tras a pauz:** aplikace volí pořadí návštěv tak, aby sestra **raději popojela k dalšímu klientovi, než aby dlouho čekala**. K době jízdy se připočítává organizační rezerva (+10 min). Čas příjezdu se **zaokrouhluje na celé desítky minut** (např. 10:11 → 10:10, 12:36 → 12:40).
+
+---
+
+## 5. Přestávky a pauzy
+
+Aplikace pracuje se dvěma druhy „přestávek":
+
+| Druh | Odkud | Význam |
+|---|---|---|
+| **Překážka v práci** | List `docházka` (začátek/konec přestávky) | Dovolená, lékař apod. Blokuje konkrétní čas — sestra v něm nepracuje. |
+| **Přestávka na odpočinek** | Přidává aplikace automaticky | **30 minut každý pracovní den**, začátek **nejpozději ve 13:00**. V itineráři ji poznáte podle ☕. |
+
+Přestávka na odpočinek se vkládá jako klidový blok (sestra v něm nikam nejede). Pokud má sestra v daný den **méně klientů** než kapacitu směny, aplikace navíc rozprostře volný čas jako **krátké pauzy 5–20 minut mezi návštěvami** — sestra tak nemá jednu velkou proluku, ale plynulejší den.
+
+---
+
+## 6. Plánování od zvoleného dne
+
+Pokud sestra onemocní nebo nastane jiná situace, lze plán sestavit pouze pro zbytek týdne.
+
+Na hlavní obrazovce v sekci **Plánovat od:** klikněte na požadovaný den:
 
 ```
 Plánovat od:  [ Po ][ Út ][ St ][ Čt ][ Pá ]
@@ -180,24 +141,25 @@ Plánovat od:  [ Po ][ Út ][ St ][ Čt ][ Pá ]
 
 - Výchozí hodnota je **Pondělí**.
 - Při výběru např. **Středa** se plán sestaví pouze pro St, Čt, Pá.
-- Pacienti, kteří mají naplánovanou návštěvu pouze v Po nebo Út, se pro tento týden neuváží — neobjeví se ani v reportu neplánovaných návštěv.
+- Klienti s návštěvou pouze v Po nebo Út se pro tento týden neuváží — neobjeví se ani v reportu neplánovaných.
 
 ---
 
-## 6. Výsledný plán
+## 7. Výsledný plán
 
-Po dokončení plánování se zobrazí **týdenní přehled** — mřížka (sestry × dny) s barevnými bloky návštěv.
+Po dokončení se zobrazí **týdenní přehled** — mřížka (sestry × dny) s barevnými bloky návštěv. Lze přepínat mezi **reálným** a **ideálním** plánem.
 
 Kliknutím na konkrétní den se otevře **denní detail** s:
-- seřazeným itinerářem každé sestry,
+- seřazeným itinerářem každé sestry (čas příjezdu/odjezdu, adresa),
 - dobou jízdy od předchozí zastávky,
+- vyznačenou **přestávkou na odpočinek** (☕ 30 min),
 - mapou tras (každá sestra jinou barvou).
+
+Pod přehledem najdete **report náhradních časů** — seznam klientů, kterým byl přidělen jiný než ideální čas (je vhodné je informovat).
 
 ---
 
-## 7. Neplánované návštěvy a varování
-
-Pod týdenním přehledem se zobrazuje **report problémů** ve dvou kategoriích:
+## 8. Neplánované návštěvy a varování
 
 ### Neplánované návštěvy
 
@@ -205,53 +167,48 @@ Návštěva nebyla zařazena do plánu. Typické důvody:
 
 | Důvod | Co s tím |
 |---|---|
-| Žádná sestra nemá dostupný slot odpovídající časovému oknu pacienta | Rozšiřte okno CAS_OD–CAS_DO, nebo zkontrolujte pracovní dobu sester |
-| Preferovaná sestra nemá volný čas a žádná jiná také ne | Přidejte sestru, nebo změňte preferenci na `ANY` |
-| Návštěva se nevejde do žádné směny (příliš krátká směna) | Zkontrolujte `TRVANI_MIN` a pracovní dobu sester |
+| Žádná sestra nemá dostupný slot odpovídající časovému oknu klienta | Rozšiřte ideální/náhradní okno, nebo zkontrolujte přítomnost sester |
+| Nedostatek kapacity (i po uvolnění všech časových omezení) | Přidejte sestru, zkraťte délku úkonů, nebo rozložte návštěvy do více dnů |
+| Návštěva se nevejde do směny (příliš dlouhý úkon) | Zkontrolujte délku úkonu vs. pracovní dobu 07:00–15:30 |
 
-### Varování u naplánovaných návštěv
-
-Varování se zobrazuje přímo u návštěvy v reportu (symbol ⚠). Návštěva je v plánu, ale je třeba ji zkontrolovat:
+### Varování u naplánovaných návštěv (symbol ⚠)
 
 | Varování | Vysvětlení |
 |---|---|
-| Přiřazena náhradní sestra (požadována: Jana Nováková) | Preferovaná sestra neměla volný slot; přiřazena jiná |
-| Adresa nebyla geocodována — cestovní čas nezohledněn | Adresu se nepodařilo převést na souřadnice; plán nerespektuje dobu jízdy k tomuto pacientovi |
+| Naplánováno v náhradním čase — informujte klienta | Ideální čas nebyl dostupný, použito náhradní okno |
+| Naplánováno bez časového omezení — původní čas nebyl dostupný | Nešlo splnit ideální ani náhradní okno |
+| Adresa nebyla geocodována — cestovní čas nezohledněn | Adresu se nepodařilo převést na souřadnice; plán u tohoto klienta nerespektuje dobu jízdy |
 
 ---
 
-## 8. Tisk a export do PDF
+## 9. Tisk a export do PDF
 
-Tlačítko **Tisknout / PDF** (vpravo nahoře nad plánem) otevře systémový dialog tisku. Pro uložení jako PDF zvolte v dialogu tiskárnu **Uložit jako PDF** (nebo ekvivalent v daném prohlížeči).
+Tlačítko **Tisknout / PDF** (nad plánem) otevře systémový dialog tisku. Pro uložení jako PDF zvolte tiskárnu **Uložit jako PDF** (nebo ekvivalent v prohlížeči).
 
-Tiskový výstup je optimalizován pro formát **A4 na šířku**:
-- jedna tabulka sester × dny s barevnými bloky návštěv,
-- legenda barev sester,
-- seznam neplánovaných návštěv (pokud existují).
+Tiskový výstup je optimalizován pro **A4 na šířku**: tabulka sester × dny s barevnými bloky, legenda barev a seznam neplánovaných návštěv (pokud existují).
 
 ---
 
-## 9. Časté chyby a jejich řešení
+## 10. Časté chyby a jejich řešení
 
 ### Chyby při načítání souboru
 
-| Chybová hláška | Příčina | Řešení |
-|---|---|---|
-| `Řádek N: neplatný formát — očekáváno 8 sloupců` | Chybí oddělovač `\|` | Zkontrolujte, že řádek má 8 sloupců oddělených `\|` |
-| `Řádek N: neplatný formát CAS_OD "..."` | Čas není ve formátu `HH:MM` | Opravte formát, nebo použijte `ANY` |
-| `Řádek N: CAS_OD je pozdější než CAS_DO` | Okno je obrácené | Prohoďte hodnoty nebo použijte `ANY` |
-| `Řádek N: neplatná délka návštěvy "..."` | TRVANI_MIN není číslo, nebo je nula/záporné | Zadejte kladné celé číslo |
-| `Řádek N: neznámý den "..."` | Překlep v názvu dne | Povolené hodnoty: `Po`, `Ut` (nebo `Út`), `St`, `Ct` (nebo `Čt`), `Pa` (nebo `Pá`), `ALL` |
-| `Řádek N: neplatný formát přestávky "..."` | Přestávka nemá tvar `HH:MM-HH:MM` | Opravte formát, oddělujte pomlčkou bez mezer |
+| Problém | Řešení |
+|---|---|
+| `Soubor neobsahuje listy: …` | Soubor musí mít listy `klienti`, `docházka`, `pečovatelky` (přesné názvy) |
+| `Žádný klient se zatrhnutým plánováním nebyl nalezen` | Zatrhněte sloupec **plán** u klientů, kteří se mají plánovat |
+| `… chybí nebo neplatná délka úkonu` | U zatrženého dne doplňte kladné číslo do sloupce **délka** |
+| `Žádná pečovatelka nemá vyplněnou přítomnost` | V listu `docházka` zatrhněte přítomnost alespoň u jedné sestry |
 
 ### Problémy s geocodováním
 
 - **Adresa nenalezena:** Zkuste přesnější formát — přidejte PSČ nebo název obce.
-- **Špatná poloha na mapě:** Nominatim (OpenStreetMap) může mít v některých lokalitách méně přesná data. V takovém případě se plán sestaví, ale cestovní časy budou nepřesné.
-- **Geocodování trvá dlouho:** Nominatim povoluje maximálně 1 dotaz za sekundu; pro 10 pacientů to znamená cca 11 sekund. Jde o záměrné omezení.
+- **Špatná poloha na mapě:** Nominatim (OpenStreetMap) může mít v některých lokalitách méně přesná data; plán se sestaví, ale cestovní časy budou nepřesné.
+- **Geocodování trvá dlouho:** Nominatim povoluje cca 1 dotaz za sekundu — jde o záměrné omezení.
 
 ### Plán je sestaven, ale nevypadá správně
 
-- **Nerovnoměrné rozdělení zátěže:** Algoritmus upřednostňuje požadované sestry — pacienti s preferencí `ANY` se dostanou ke konkrétní sestře jen pokud preferovaná není obsazena. Změňte preference na `ANY` pro rovnoměrnější rozložení.
-- **Sestra nemá žádnou návštěvu:** Buď nemá dostupnost v daný den, nebo všichni její potenciální pacienti mají pevné preference na jinou sestru.
-- **Pacient chybí v plánu i v reportu:** Zkontrolujte, zda den návštěvy pacienta leží v aktuálně nastavené části týdne (viz [Plánování od zvoleného dne](#5-plánování-od-zvoleného-dne)).
+- **Sestra nemá žádnou návštěvu:** Buď nemá v daný den zatrženou přítomnost, nebo je daleko od všech klientů (geograficky je bere bližší sestra).
+- **Velká proluka v itineráři:** U vytížených dnů je to nutné kvůli pevným časům klientů; u méně vytížených aplikace rozprostírá krátké pauzy 5–20 min.
+- **Klient chybí v plánu i v reportu:** Zkontrolujte, zda den návštěvy leží v aktuálně nastavené části týdne (viz [Plánování od zvoleného dne](#6-plánování-od-zvoleného-dne)).
+```

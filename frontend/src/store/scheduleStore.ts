@@ -14,6 +14,7 @@ interface ScheduleStore {
   nurses: Nurse[];
   patients: Patient[];
   schedule: WeekSchedule | null;
+  idealSchedule: WeekSchedule | null;
   parseErrors: string[];
   progress: ProgressState;
   selectedDay: string | null;
@@ -21,6 +22,7 @@ interface ScheduleStore {
   setNurses: (nurses: Nurse[]) => void;
   setPatients: (patients: Patient[]) => void;
   setSchedule: (schedule: WeekSchedule) => void;
+  setIdealSchedule: (schedule: WeekSchedule) => void;
   setParseErrors: (errors: string[]) => void;
   setProgress: (progress: Partial<ProgressState>) => void;
   setSelectedDay: (day: string | null) => void;
@@ -38,6 +40,7 @@ export const useScheduleStore = create<ScheduleStore>((set) => ({
   nurses: [],
   patients: [],
   schedule: null,
+  idealSchedule: null,
   parseErrors: [],
   progress: defaultProgress,
   selectedDay: null,
@@ -45,6 +48,7 @@ export const useScheduleStore = create<ScheduleStore>((set) => ({
   setNurses: (nurses) => set({ nurses }),
   setPatients: (patients) => set({ patients }),
   setSchedule: (schedule) => set({ schedule }),
+  setIdealSchedule: (idealSchedule) => set({ idealSchedule }),
   setParseErrors: (parseErrors) => set({ parseErrors }),
   setProgress: (progress) =>
     set((s) => ({ progress: { ...s.progress, ...progress } })),
@@ -54,6 +58,7 @@ export const useScheduleStore = create<ScheduleStore>((set) => ({
       nurses: [],
       patients: [],
       schedule: null,
+      idealSchedule: null,
       parseErrors: [],
       progress: defaultProgress,
       selectedDay: null,
